@@ -41,6 +41,4 @@ userSchema.methods.isPasswordCorrect = async function(inputPassword){
 }
 
 
-
-
 export default User = mongoose.model("User", userSchema);
