@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
-import bcrypt from "bcrypt"
+import bcrypt from "bcrypt";
 
-const userSchema = Schema(
+const userSchema = new Schema(
   {
     email: {
       type: String,
@@ -12,33 +12,36 @@ const userSchema = Schema(
         /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
         "Please enter a valid email address",
       ],
-      unique: [true, "Email already exist"],
+      unique: true,
     },
+
     name: {
       type: String,
       required: [true, "Name is required for creating an account"],
     },
+
     password: {
       type: String,
       required: [true, "Password is required for creating an account"],
-      minlength: [6, "Password should be 6 character"],
+      minlength: [6, "Password should be at least 6 characters"],
       select: false,
     },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 
-userSchema.pre("save", async function(){
-    if(!this.isModified("password")) return null;
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
 
-    this.password = await bcrypt.hash("this.password", 10);
-})
+  this.password = await bcrypt.hash(this.password, 10);
+});
 
-userSchema.methods.isPasswordCorrect = async function(inputPassword){
-    return await bcrypt.compare(inputPassword, this.password)
-}
+userSchema.methods.isPasswordCorrect = async function (inputPassword) {
+  return await bcrypt.compare(inputPassword, this.password);
+};
 
+const User = mongoose.model("User", userSchema);
 
-export default User = mongoose.model("User", userSchema);
+export default User;

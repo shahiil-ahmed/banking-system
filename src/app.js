@@ -7,6 +7,6 @@ app.use(express.urlencoded({extended: true, limit: "16kb"}))
 
 
 
-import router from "./routes/auth.route.js";
+import authRouter from "./routes/auth.route.js";
 app.use("/api/auth", authRouter);
 export default app;
