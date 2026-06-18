@@ -15,10 +15,7 @@ export const authMiddleware = asyncHandler(async (req, res, next) => {
   // const isBlacklisted = await TokenBlackList.findOne({ token });
 
   // if (isBlacklisted) {
-  //     throw new ApiError(
-  //         401,
-  //         "Unauthorized access, token is invalid"
-  //     );
+  //   throw new ApiError(401, "Unauthorized access, token is invalid");
   // }
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -34,51 +31,32 @@ export const authMiddleware = asyncHandler(async (req, res, next) => {
   next();
 });
 
-// export const authSystemUserMiddleware = asyncHandler(async (req, res, next) => {
+export const authSystemUserMiddleware = asyncHandler(async (req, res, next) => {
+  const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
 
-//     const token =
-//         req.cookies?.token ||
-//         req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    throw new ApiError(401, "Unauthorized access, token is missing");
+  }
 
-//     if (!token) {
-//         throw new ApiError(
-//             401,
-//             "Unauthorized access, token is missing"
-//         );
-//     }
+  // const isBlacklisted = await TokenBlackList.findOne({ token });
 
-//     const isBlacklisted = await TokenBlackList.findOne({ token });
+  // if (isBlacklisted) {
+  //   throw new ApiError(401, "Unauthorized access, token is invalid");
+  // }
 
-//     if (isBlacklisted) {
-//         throw new ApiError(
-//             401,
-//             "Unauthorized access, token is invalid"
-//         );
-//     }
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-//     const decoded = jwt.verify(
-//         token,
-//         process.env.JWT_SECRET
-//     );
+  const user = await User.findById(decoded.userId).select("+systemUser");
 
-//     const user = await User.findById(decoded.userId)
-//         .select("+systemUser");
+  if (!user) {
+    throw new ApiError(401, "User not found");
+  }
 
-//     if (!user) {
-//         throw new ApiError(
-//             401,
-//             "User not found"
-//         );
-//     }
+  if (!user.systemUser) {
+    throw new ApiError(403, "Forbidden access, not a system user");
+  }
 
-//     if (!user.systemUser) {
-//         throw new ApiError(
-//             403,
-//             "Forbidden access, not a system user"
-//         );
-//     }
+  req.user = user;
 
-//     req.user = user;
-
-//     next();
-// });
+  next();
+});

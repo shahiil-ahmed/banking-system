@@ -26,10 +26,16 @@ const userSchema = new Schema(
       minlength: [6, "Password should be at least 6 characters"],
       select: false,
     },
+    systemUser: {
+      type: Boolean,
+      default: false,
+      immutable: true,
+      select: false,
+    },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 userSchema.pre("save", async function () {
