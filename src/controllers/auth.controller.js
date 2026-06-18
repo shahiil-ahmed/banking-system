@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 import { sendRegistrationEmail } from "../services/email.service.js";
+import { tokenBlackListModel } from "../models/blackList.model.js";
 
 /**
  * - user register controller
@@ -54,25 +55,24 @@ export const register = asyncHandler(async (req, res) => {
   );
 });
 
-
 /**
  * - user login controller
  * - POST/api/auth/login
  */
 
 export const login = asyncHandler(async (req, res) => {
-  const { email, password} = req.body;
+  const { email, password } = req.body;
 
-  const user = await User.findOne({email}).select("+password")
+  const user = await User.findOne({ email }).select("+password");
 
-  if(!user){
-    throw new ApiError(401, "Email or passowrd is invalid")
+  if (!user) {
+    throw new ApiError(401, "Email or passowrd is invalid");
   }
 
   const isValidPassword = await user.isPasswordCorrect(password);
 
-  if(!isValidPassword){
-    throw new ApiError(401, "Email or passowrd is invalid")
+  if (!isValidPassword) {
+    throw new ApiError(401, "Email or passowrd is invalid");
   }
 
   const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
@@ -93,4 +93,28 @@ export const login = asyncHandler(async (req, res) => {
       "User logged in successfully",
     ),
   );
+});
+
+export const userLogoutController = asyncHandler(async (req, res) => {
+  const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res
+      .status(200)
+      .json(new ApiResponse(200, null, "User logged out successfully"));
+  }
+
+  await tokenBlackListModel.create({
+    token,
+  });
+
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "User logged out successfully"));
 });

@@ -14,47 +14,38 @@ export const createAccountController = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, account, "Account created successfully"));
 });
 
-// export const getUserAccountsController = asyncHandler(async (req, res) => {
+export const getUserAccountsController = asyncHandler(async (req, res) => {
+  const accounts = await Account.find({
+    user: req.user._id,
+  });
 
-//     const accounts = await Account.find({
-//         user: req.user._id
-//     });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, accounts, "Accounts fetched successfully"));
+});
 
-//     return res.status(200).json(
-//         new ApiResponse(
-//             200,
-//             accounts,
-//             "Accounts fetched successfully"
-//         )
-//     );
-// });
+export const getAccountBalanceController = asyncHandler(async (req, res) => {
+  const { accountId } = req.params;
 
-// export const getAccountBalanceController = asyncHandler(async (req, res) => {
+  const account = await Account.findOne({
+    _id: accountId,
+    user: req.user._id,
+  });
 
-//     const { accountId } = req.params;
+  if (!account) {
+    throw new ApiError(404, "Account not found");
+  }
 
-//     const account = await Account.findOne({
-//         _id: accountId,
-//         user: req.user._id
-//     });
+  const balance = await account.getBalance();
 
-//     if (!account) {
-//         throw new ApiError(
-//             404,
-//             "Account not found"
-//         );
-//     }
-
-//     const balance = await account.getBalance();
-
-//     return res.status(200).json(
-//         new ApiResponse(
-//             200,
-//             {
-//                 accountId: account._id,
-//                 balance
-//             },
-//             "Account balance fetched successfully"
-//         )
-//     );
-// });
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        accountId: account._id,
+        balance,
+      },
+      "Account balance fetched successfully",
+    ),
+  );
+});

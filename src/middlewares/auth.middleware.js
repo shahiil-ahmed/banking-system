@@ -1,5 +1,5 @@
 import User from "../models/user.model.js";
-// import TokenBlackList from "../models/blackList.model.js";
+import { tokenBlackListModel } from "../models/blackList.model.js";
 import jwt from "jsonwebtoken";
 
 import { ApiError } from "../utils/ApiError.js";
@@ -12,11 +12,11 @@ export const authMiddleware = asyncHandler(async (req, res, next) => {
     throw new ApiError(401, "Unauthorized access, token is missing");
   }
 
-  // const isBlacklisted = await TokenBlackList.findOne({ token });
+  const isBlacklisted = await tokenBlackListModel.findOne({ token });
 
-  // if (isBlacklisted) {
-  //   throw new ApiError(401, "Unauthorized access, token is invalid");
-  // }
+  if (isBlacklisted) {
+    throw new ApiError(401, "Unauthorized access, token is invalid");
+  }
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
@@ -38,11 +38,11 @@ export const authSystemUserMiddleware = asyncHandler(async (req, res, next) => {
     throw new ApiError(401, "Unauthorized access, token is missing");
   }
 
-  // const isBlacklisted = await TokenBlackList.findOne({ token });
+  const isBlacklisted = await tokenBlackListModel.findOne({ token });
 
-  // if (isBlacklisted) {
-  //   throw new ApiError(401, "Unauthorized access, token is invalid");
-  // }
+  if (isBlacklisted) {
+    throw new ApiError(401, "Unauthorized access, token is invalid");
+  }
 
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
 

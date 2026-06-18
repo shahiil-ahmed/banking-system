@@ -14,6 +14,7 @@ import transactionRoutes from "./routes/transaction.route.js";
 app.use("/api/auth", authRouter);
 app.use("/api/accounts/", accountRouter);
 app.use("/api/transactions/", transactionRoutes);
+
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
